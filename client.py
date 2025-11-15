@@ -82,7 +82,6 @@ def hologram_intro():
             clear_line()
             print(magenta(flicker))
 
-        # scanning beam
         if frame % 3 == 0:
             cursor_up(len(ASCII_LOGO_LINES))
             beam_pos = frame % len(ASCII_LOGO_LINES[0])
@@ -121,13 +120,11 @@ def closing_animation():
 
     for frame in range(fade_frames):
         cursor_up(len(ASCII_LOGO_LINES))
-
         intensity = frame / fade_frames
 
         for line in ASCII_LOGO_LINES:
             clear_line()
 
-            # white flash
             if intensity > 0.75:
                 glitched = ""
                 for c in line:
@@ -146,7 +143,6 @@ def closing_animation():
                     glitched += c
             print(magenta(glitched))
 
-        # scan beam (reverse direction)
         cursor_up(len(ASCII_LOGO_LINES))
         beam_pos = (len(ASCII_LOGO_LINES[0]) - 1) - (frame % len(ASCII_LOGO_LINES[0]))
 
@@ -166,8 +162,6 @@ def closing_animation():
 
     time.sleep(0.2)
 
-    # "made by JTA"
-    print()
     text = "made by JTA"
     for c in text:
         print(white(c), end="", flush=True)
@@ -213,6 +207,9 @@ def main():
     print(green("Connected to AI Worker Endpoint."))
     print(green("Type '/update' to update. Type '/reboot' to reboot. Type 'exit' to quit.\n"))
 
+    # store conversation history
+    history = []
+
     while True:
         user_input = input("You: ").strip()
 
@@ -233,11 +230,7 @@ def main():
         if user_input.lower() == "/reboot":
             print(green("\nRebooting VLTGG AI...\n"))
             closing_animation()
-
-            # Clear screen
             os.system("cls" if os.name == "nt" else "clear")
-
-            # Restart intro
             hologram_intro()
             print(green("Connected to AI Worker Endpoint."))
             print(green("Type '/update', '/reboot', or 'exit'.\n"))
@@ -251,17 +244,31 @@ def main():
             break
 
         # -----------------------
-        # Normal AI request
+        # Add new user message to history
         # -----------------------
+        history.append({"role": "user", "content": user_input})
+        history = history[-10:]   # keep last 10 entries (5 user + 5 ai)
+
+        # -----------------------
+        # Build final message list
+        # -----------------------
+        payload = []
+        for msg in history:
+            payload.append(msg)
+
         encoded = urllib.parse.quote(user_input)
 
+        # spinner
         global thinking
         thinking = True
         t = threading.Thread(target=spinner)
         t.start()
 
+        # request
         try:
-            response = requests.get(f"{WORKER_URL}/?q={encoded}")
+            response = requests.get(
+                f"{WORKER_URL}/?q={encoded}"
+            )
         except Exception as e:
             thinking = False
             t.join()
@@ -277,6 +284,11 @@ def main():
             continue
 
         answer = response.text.strip()
+
+        # store assistant reply
+        history.append({"role": "assistant", "content": answer})
+        history = history[-10:]
+
         print("AI: ", end="")
         typewriter(answer)
 
