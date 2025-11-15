@@ -19,7 +19,7 @@ except:
 # SETTINGS
 # -----------------------
 
-USE_COLOR = True
+USE_COLOR = False
 WORKER_URL = "https://aiapi.byjta.net"
 
 ASCII_LOGO_LINES = [
@@ -207,14 +207,13 @@ def main():
     print(green("Connected to AI Worker Endpoint."))
     print(green("Type '/update' to update. Type '/reboot' to reboot. Type 'exit' to quit.\n"))
 
-    # store conversation history
-    history = []
+    history = []  # store last 10 messages (5 pairs)
 
     while True:
         user_input = input("You: ").strip()
 
         # -----------------------
-        # /update command
+        # /update
         # -----------------------
         if user_input.lower() == "/update":
             print(green("Running updater...\n"))
@@ -225,7 +224,7 @@ def main():
             continue
 
         # -----------------------
-        # /reboot command
+        # /reboot
         # -----------------------
         if user_input.lower() == "/reboot":
             print(green("\nRebooting VLTGG AI...\n"))
@@ -237,38 +236,44 @@ def main():
             continue
 
         # -----------------------
-        # exit command
+        # exit
         # -----------------------
         if user_input.lower() == "exit":
             closing_animation()
             break
 
         # -----------------------
-        # Add new user message to history
+        # Add message to history
         # -----------------------
         history.append({"role": "user", "content": user_input})
-        history = history[-10:]   # keep last 10 entries (5 user + 5 ai)
+        history = history[-10:]  # only last 5 exchanges
 
         # -----------------------
-        # Build final message list
+        # BUILD CONTEXT STRING
         # -----------------------
-        payload = []
+        context = ""
         for msg in history:
-            payload.append(msg)
+            if msg["role"] == "user":
+                context += f"USER: {msg['content']}\n"
+            else:
+                context += f"ASSISTANT: {msg['content']}\n"
 
-        encoded = urllib.parse.quote(user_input)
+        # Final query text
+        final_prompt = context + f"USER: {user_input}"
 
+        # Encode for URL
+        encoded = urllib.parse.quote(final_prompt)
+
+        # -----------------------
         # spinner
+        # -----------------------
         global thinking
         thinking = True
         t = threading.Thread(target=spinner)
         t.start()
 
-        # request
         try:
-            response = requests.get(
-                f"{WORKER_URL}/?q={encoded}"
-            )
+            response = requests.get(f"{WORKER_URL}/?q={encoded}")
         except Exception as e:
             thinking = False
             t.join()
@@ -285,7 +290,7 @@ def main():
 
         answer = response.text.strip()
 
-        # store assistant reply
+        # Save to history
         history.append({"role": "assistant", "content": answer})
         history = history[-10:]
 
