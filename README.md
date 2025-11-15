@@ -36,3 +36,7 @@ Just **pure text in → pure intelligence out**.
 ---
 
 ## **Example Request**
+GET https://aiapi.byjta.net/?q=hello
+
+## **Example Response**
+Plain text:Hi!
