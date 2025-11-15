@@ -210,13 +210,15 @@ def spinner():
 def main():
     hologram_intro()
 
-    print(green("Connected to AI Endpoint Securely - Made By JTA."))
-    print(green("Type '/update' to update. Type 'exit' to quit.\n"))
+    print(green("Connected to AI Worker Endpoint."))
+    print(green("Type '/update' to update. Type '/reboot' to reboot. Type 'exit' to quit.\n"))
 
     while True:
         user_input = input("You: ").strip()
 
+        # -----------------------
         # /update command
+        # -----------------------
         if user_input.lower() == "/update":
             print(green("Running updater...\n"))
             try:
@@ -225,12 +227,32 @@ def main():
                 print(red("Failed to run updater: ") + str(e))
             continue
 
+        # -----------------------
+        # /reboot command
+        # -----------------------
+        if user_input.lower() == "/reboot":
+            print(green("\nRebooting VLTGG AI...\n"))
+            closing_animation()
+
+            # Clear screen
+            os.system("cls" if os.name == "nt" else "clear")
+
+            # Restart intro
+            hologram_intro()
+            print(green("Connected to AI Worker Endpoint."))
+            print(green("Type '/update', '/reboot', or 'exit'.\n"))
+            continue
+
+        # -----------------------
         # exit command
+        # -----------------------
         if user_input.lower() == "exit":
             closing_animation()
             break
 
-        # ask AI
+        # -----------------------
+        # Normal AI request
+        # -----------------------
         encoded = urllib.parse.quote(user_input)
 
         global thinking
