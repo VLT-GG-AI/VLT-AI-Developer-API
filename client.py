@@ -210,7 +210,7 @@ def spinner():
 def main():
     hologram_intro()
 
-    print(green("Connected to AI Worker Endpoint."))
+    print(green("Connected to AI Endpoint Securely - Made By JTA."))
     print(green("Type '/update' to update. Type 'exit' to quit.\n"))
 
     while True:
