@@ -19,7 +19,7 @@ except:
 # SETTINGS
 # -----------------------
 
-USE_COLOR = False
+USE_COLOR = True
 WORKER_URL = "https://aiapi.byjta.net"
 
 ASCII_LOGO_LINES = [
