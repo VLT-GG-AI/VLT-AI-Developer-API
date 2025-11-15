@@ -5,6 +5,7 @@ import itertools
 import time
 import sys
 import random
+import os
 
 # Optional colors
 try:
@@ -107,13 +108,12 @@ def hologram_intro():
     time.sleep(0.4)
 
 # -----------------------
-# HOLOGRAM OUTRO (MATCHED + WHITE FLASH + DISSOLVE)
+# HOLOGRAM OUTRO
 # -----------------------
 
 def closing_animation():
     fade_frames = 35
 
-    # Initial clean drawing
     print()
     for line in ASCII_LOGO_LINES:
         print(magenta(line))
@@ -138,7 +138,6 @@ def closing_animation():
                 print(white(glitched))
                 continue
 
-            # light dissolve + beam
             glitched = ""
             for c in line:
                 if random.random() < intensity * 0.15:
@@ -147,7 +146,7 @@ def closing_animation():
                     glitched += c
             print(magenta(glitched))
 
-        # scan beam on shutdown, reverse direction, cooler
+        # scan beam (reverse direction)
         cursor_up(len(ASCII_LOGO_LINES))
         beam_pos = (len(ASCII_LOGO_LINES[0]) - 1) - (frame % len(ASCII_LOGO_LINES[0]))
 
@@ -160,7 +159,6 @@ def closing_animation():
 
         time.sleep(0.03)
 
-    # Final vanish frame
     cursor_up(len(ASCII_LOGO_LINES))
     for _ in ASCII_LOGO_LINES:
         clear_line()
@@ -168,19 +166,17 @@ def closing_animation():
 
     time.sleep(0.2)
 
-    # "made by JTA" TYPEWRITER
+    # "made by JTA"
     print()
     text = "made by JTA"
-    delay = 0.08
     for c in text:
         print(white(c), end="", flush=True)
-        time.sleep(delay)
+        time.sleep(0.08)
     print("\n")
-
     time.sleep(0.3)
 
 # -----------------------
-# TYPEWRITER EFFECT
+# TYPEWRITER
 # -----------------------
 
 def typewriter(text, total_time=1.2):
@@ -215,15 +211,26 @@ def main():
     hologram_intro()
 
     print(green("Connected to AI Worker Endpoint."))
-    print(green("Type 'exit' to quit.\n"))
+    print(green("Type '/update' to update. Type 'exit' to quit.\n"))
 
     while True:
-        user_input = input("You: ")
+        user_input = input("You: ").strip()
 
-        if user_input.lower().strip() == "exit":
+        # /update command
+        if user_input.lower() == "/update":
+            print(green("Running updater...\n"))
+            try:
+                os.system("update_vlt_ai.bat")
+            except Exception as e:
+                print(red("Failed to run updater: ") + str(e))
+            continue
+
+        # exit command
+        if user_input.lower() == "exit":
             closing_animation()
             break
 
+        # ask AI
         encoded = urllib.parse.quote(user_input)
 
         global thinking
